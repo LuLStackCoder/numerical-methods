@@ -1,16 +1,16 @@
-var math = require("mathjs");
-var fs = require("fs");
-var readline = require('readline');
-var numeric = require('numeric');
-var os = require("os");
-fileContent = fs.readFileSync("data.txt", "utf8");
-var arr = fileContent.split(os.EOL);
-var stream1 = fs.createWriteStream("datapaste.txt");
+const math = require("mathjs");
+const fs = require("fs");
+const readline = require('readline');
+const numeric = require('numeric');
+const os = require("os");
+const fileContent = fs.readFileSync("data.txt", "utf8");
+const arr = fileContent.split(os.EOL);
+const stream1 = fs.createWriteStream("datapaste.txt");
 
 
 function getMatrix(arr) {
-    var array = [];
-    var vec = [];
+    let array = [];
+    let vec = [];
     arr.forEach(function (v) {
         if (v !== arr[arr.length - 1])
             array.push(v.split(","));
@@ -19,7 +19,7 @@ function getMatrix(arr) {
     });
     array = math.number(array);
     vec = math.number(vec);
-    var n = vec.length;
+    let n = vec.length;
     array[0].unshift(0);
     array[array.length - 1].push(0);
     return [array, vec];
@@ -27,12 +27,12 @@ function getMatrix(arr) {
 
 
 function tma(matrix, d) {
-    var a = matrix[0];
-    var b = matrix[1];
-    var c = matrix[2];
-    var p = [-c[0] / b[0]];
-    var q = [d[0] / b[0]];
-    var n = d.length;
+    let a = matrix[0];
+    let b = matrix[1];
+    let c = matrix[2];
+    let p = [-c[0] / b[0]];
+    let q = [d[0] / b[0]];
+    let n = d.length;
     x = math.zeros(n + 1)._data;
     for (let i = 1; i < n; i++) {
         p.push(-c[i] / (b[i] + a[i] * p[i - 1]));
@@ -50,12 +50,12 @@ function tma(matrix, d) {
 function matrixParse(matrix) {
     parsedMatrix = math.clone(matrix);
     if (parsedMatrix[0][0] === undefined) {
-        for (var i = 0; i < parsedMatrix.length; i++)
+        for (let i = 0; i < parsedMatrix.length; i++)
             parsedMatrix[i] = Number(matrix[i].toFixed(2));
         return parsedMatrix;
     }
-    for (var i = 0; i < n; i++) {
-        for (var j = 0; j < n; j++) {
+    for (let i = 0; i < n; i++) {
+        for (let j = 0; j < n; j++) {
             parsedMatrix[i][j] = Number(matrix[i][j].toFixed(2));
         }
     }
@@ -64,10 +64,10 @@ function matrixParse(matrix) {
 
 
 function main() {
-    var linSyst = getMatrix(arr);
-    var array = linSyst[0];
-    var vec = linSyst[1];
-    var solve = matrixParse(tma(array, vec));
+    let linSyst = getMatrix(arr);
+    let array = linSyst[0];
+    let vec = linSyst[1];
+    let solve = matrixParse(tma(array, vec));
     console.log(solve);
     solve.forEach(function (v) {
         stream1.write(v + ', ');

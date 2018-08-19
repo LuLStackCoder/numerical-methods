@@ -1,28 +1,29 @@
-var math = require("mathjs");
-var fs = require("fs");
-var readline = require('readline');
-var numeric = require('numeric');
-var fileContent = fs.readFileSync("data.txt", "utf8");
-var arr = fileContent.split(" ");
-var stream1 = fs.createWriteStream("datapaste.txt");
-var n = parseInt(math.sqrt(arr.length));
-console.log('n: ' + n);
-var array = [];
-var k = 0;
+const math = require("mathjs");
+const fs = require("fs");
+const readline = require('readline');
+const numeric = require('numeric');
+const os = require("os");
+const fileContent = fs.readFileSync("data.txt", "utf8");
+const arr = fileContent.split(os.EOL);
+const stream1 = fs.createWriteStream("datapaste.txt");
+var n;
 var eps = process.argv[2];
 if (eps === undefined)
     eps = 0.001;
-var eigenvalues = math.eye(n, n)._data;
+var eigenvalues;
 var prevRoot = 0;
 var currRoot = 0;
 var imEv = [];
 
-array = math.zeros(n, n)._data;
 
-for (var i in array) {
-    for (var j in array) {
-        array[i][j] = math.eval(arr[k++]);
-    }
+function getMatrix(arr) {
+    let array = [];
+    arr.forEach(function (v) {
+        array.push(v.split(","));
+    });
+    array = math.number(array);
+    n = array.length;
+    return array;
 }
 
 
@@ -127,28 +128,7 @@ function solve(b, c) {
 
 
 function matrixParse(matrix) {
-    parsedMatrix = math.clone(matrix);
-    if (matrix[0][0] === undefined) {
-        for (var i = 0; i < matrix.length; i++) {
-            if (parsedMatrix[i].re !== undefined && parsedMatrix[i].im !== undefined) {
-                parsedMatrix[i].re = Number(parsedMatrix[i].re.toFixed(precision(eps)));
-                parsedMatrix[i].im = Number(parsedMatrix[i].im.toFixed(precision(eps)));
-            }
-            else matrix[i] = parseFloat(matrix[i].toFixed(precision(eps)));
-        }
-        return matrix;
-    }
-    for (var i in parsedMatrix) {
-        for (var j in parsedMatrix) {
-            if (parsedMatrix[i][j].re !== undefined && parsedMatrix[i][j].im !== undefined) {
-                parsedMatrix[i][j].re = Number(parsedMatrix[i][j].re.toFixed(precision(eps)));
-                parsedMatrix[i][j].im = Number(parsedMatrix[i][j].im.toFixed(precision(eps)));
-            }
-            else
-                parsedMatrix[i][j] = Number(parsedMatrix[i][j].toFixed(precision(eps)));
-        }
-    }
-    return parsedMatrix;
+    return math.round(matrix, precision(eps));
 }
 
 
@@ -161,13 +141,9 @@ function precision(x) {
     return count;
 }
 
-function eiqvec(matrix, vec) {
-    var eigvec;
-
-}
-
 
 function main() {
+    var array = getMatrix(arr);
     var qMatrix = decompose(array)[0];
     var rMatrix = decompose(array)[1];
     var ending = algorithm(array);
@@ -176,7 +152,6 @@ function main() {
     var eigvec = math.multiply(math.eye(n)._data, lambda[0]);
     var Al = math.subtract(array, eigvec);
     var veczero = math.zeros(n)._data;
-    var eigenvec = matrixParse(numeric.eig(array).E.x);
     console.log("A: ");
     console.log(array);
     console.log("\n");
@@ -194,9 +169,23 @@ function main() {
     console.log("\n");
     console.log("Lambda: ");
     console.log(lambda);
-    console.log("X: ");
-    console.log(eigenvec);
 
+    if (numeric.eig(array).E.y !== undefined) {
+        for (let i = 0; i < numeric.eig(array).E.x.length; i++) {
+            console.log("X" + i + ": ");
+            var eigvec = [];
+            for (let j = 0; j < numeric.eig(array).E.x.length; j++) {
+                eigvec.push(math.complex(numeric.eig(array).E.x[i][j], numeric.eig(array).E.y[i][j]));
+            }
+            console.log(matrixParse(eigvec));
+        }
+    }
+    else {
+        for (let i = 0; i < numeric.eig(array).E.x.length; i++) {
+            console.log("X" + i + ": ");
+            console.log(matrixParse(numeric.eig(array).E.x[i]));
+        }
+    }
     stream1.write("A: \n");
     array.forEach(function (v) {
         stream1.write(v.join(', ') + '\n');
@@ -226,7 +215,6 @@ function main() {
     lambda.forEach(function (v) {
         stream1.write(v + ', ');
     });
-
 }
 
 main();

@@ -1,0 +1,29 @@
+ newton 
+a = 1
+b = 2
+eps = 0.0001 
+x0 = 1.1
+x = 1.4270693322388839
+iteration = 2
+
+ iteration 
+a = 1
+b = 2
+eps = 0.0001 
+x0 = 1.1
+x = 1.426983562289665
+iteration = 5 
+secant 
+a = 1
+b = 2
+eps = 0.0001 
+x0 = 1.2
+x1 = 1.2
+x = 1.4270693317454288
+iteration = 4 
+dichotomy 
+a = 1
+b = 2
+eps = 0.0001
+x = 1.42706298828125
+iteration = 13

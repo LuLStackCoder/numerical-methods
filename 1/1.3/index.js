@@ -1,40 +1,39 @@
-var math = require("mathjs");
-var fs = require("fs");
-var readline = require('readline');
-var numeric = require('numeric');
-fileContent = fs.readFileSync("data.txt", "utf8");
-var arr = fileContent.split(" ");
-var fileContentB = fs.readFileSync("data2.txt", "utf8");
-var arrb = fileContentB.split(" ");
-var stream1 = fs.createWriteStream("datapaste.txt");
-var n = parseInt(math.sqrt(arr.length));
-var array = [];
-var b = [];
-var k = 0;
+const math = require("mathjs");
+const fs = require("fs");
+const readline = require('readline');
+const numeric = require('numeric');
+const os = require("os");
+const fileContent = fs.readFileSync("data.txt", "utf8");
+const arr = fileContent.split(os.EOL);
+const stream1 = fs.createWriteStream("datapaste.txt");
+var n;
 var eps = process.argv[2];
 if (eps === undefined)
     eps = 0.1;
 
-array = math.zeros(n, n)._data;
 
-for (var i = 0; i < n; i++) {
-    for (var j = 0; j < n; j++) {
-        array[i][j] = parseInt(arr[k++]);
-    }
-}
-
-
-for (var i = 0; i < n; i++) {
-    b.push(parseInt(arrb[i]));
+function getMatrix(arr) {
+    let array = [];
+    let vec = [];
+    arr.forEach(function (v) {
+        if (v !== arr[arr.length - 1])
+            array.push(v.split(","));
+        else
+            vec = v.split(",");
+    });
+    array = math.number(array);
+    vec = math.number(vec);
+    n = vec.length;
+    return [array, vec];
 }
 
 
 function equiv_form(matrix, b) {
-    var alpha = math.zeros(n, n)._data;
-    var beta = [];
-    for (var i = 0; i < n; i++) {
+    let alpha = math.zeros(n, n)._data;
+    let beta = [];
+    for (let i = 0; i < n; i++) {
         beta.push(b[i] / matrix[i][i]);
-        for (var j = 0; j < n; j++) {
+        for (let j = 0; j < n; j++) {
             if (i !== j)
                 alpha[i][j] = -matrix[i][j] / matrix[i][i];
         }
@@ -44,10 +43,10 @@ function equiv_form(matrix, b) {
 
 
 function iter_solve(alpha, beta) {
-    var x = beta;
-    var k = 0;
-    var koef = norm(alpha) / (1 - norm(alpha));
-    var x_next;
+    let x = beta;
+    let k = 0;
+    let koef = norm(alpha) / (1 - norm(alpha));
+    let x_next;
     if (norm(alpha) > 1) throw new Error("Метод простых итераций не сходится");
     while (true) {
         x_next = (math.add(beta, math.multiply(alpha, x)));
@@ -61,14 +60,14 @@ function iter_solve(alpha, beta) {
 
 
 function seidel(matrix, alpha, beta) {
-    var k = 0;
-    var b = decompose(alpha)[0];
-    var c = math.subtract(alpha, b);
-    var koef = norm(alpha) / (1 - norm(alpha));
-    var tmp1 = math.multiply(math.inv(math.subtract(math.eye(n, n)._data, b)), c);
-    var tmp2 = math.multiply(math.inv(math.subtract(math.eye(n, n)._data, b)), beta);
-    var x = tmp2;
-    var x_next;
+    let k = 0;
+    let b = decompose(alpha)[0];
+    let c = math.subtract(alpha, b);
+    let koef = norm(alpha) / (1 - norm(alpha));
+    let tmp1 = math.multiply(math.inv(math.subtract(math.eye(n, n)._data, b)), c);
+    let tmp2 = math.multiply(math.inv(math.subtract(math.eye(n, n)._data, b)), beta);
+    let x = tmp2;
+    let x_next;
     if (norm(alpha) < 1)
         var currEps = (x_next, x) => koef * norm(math.subtract(x_next, x));
     else
@@ -86,22 +85,22 @@ function seidel(matrix, alpha, beta) {
 
 
 function norm(matrix) {
-    var currMatrix = matrix;
-    var max = [];
-    var normValue = 0;
+    let currMatrix = matrix;
+    let max = [];
+    let normValue = 0;
     if (matrix[0][0] === undefined) {
         currMatrix.sort(function (a, b) {
             return b - a;
         });
         return currMatrix[0];
     }
-    for (var i = 0; i < n; i++) {
+    for (let i = 0; i < n; i++) {
         max[i] = 0;
-        for (var j = 0; j < n; j++) {
+        for (let j = 0; j < n; j++) {
             max[i] += math.abs(currMatrix[i][j]);
         }
     }
-    for (var i = 0; i < max.length; i++) {
+    for (let i = 0; i < max.length; i++) {
         if (max[i] > normValue) {
             normValue = max[i];
         }
@@ -111,23 +110,12 @@ function norm(matrix) {
 
 
 function matrixParse(matrix) {
-    parsedMatrix = math.clone(matrix);
-    if (parsedMatrix[0][0] === undefined) {
-        for (var i = 0; i < parsedMatrix.length; i++)
-            parsedMatrix[i] = parseFloat(matrix[i].toFixed(precision(eps)));
-        return parsedMatrix;
-    }
-    for (var i = 0; i < n; i++) {
-        for (var j = 0; j < n; j++) {
-            parsedMatrix[i][j] = parseFloat(matrix[i][j].toFixed(precision(eps)));
-        }
-    }
-    return parsedMatrix;
+    return math.round(matrix, precision(eps));
 }
 
 
 function precision(x) {
-    var count = 0;
+    let count = 0;
     while (x < 1) {
         x *= 10;
         count++;
@@ -137,10 +125,10 @@ function precision(x) {
 
 
 function decompose(matrix) {
-    var tril = math.zeros(n, n)._data;
-    var triu = math.zeros(n, n)._data;
-    for (var i = 0; i < n; i++) {
-        for (var j = 0; j < n; j++) {
+    let tril = math.zeros(n, n)._data;
+    let triu = math.zeros(n, n)._data;
+    for (let i = 0; i < n; i++) {
+        for (let j = 0; j < n; j++) {
             if (i <= j)
                 triu[i][j] = matrix[i][j];
             if (i > j)
@@ -152,7 +140,10 @@ function decompose(matrix) {
 
 
 function main() {
-    console.log("Eps: " + eps );
+    let linSyst = getMatrix(arr);
+    let array = linSyst[0];
+    let b = linSyst[1];
+    console.log("Eps: " + eps);
     console.log("A: ");
     console.log(array);
     stream1.write("Eps: " + eps + "\n");
@@ -160,9 +151,9 @@ function main() {
     array.forEach(function (v) {
         stream1.write(v.join(', ') + '\n');
     });
-    var eqForm = equiv_form(array, b);
-    var alpha = eqForm[0];
-    var beta = eqForm[1];
+    let eqForm = equiv_form(array, b);
+    let alpha = eqForm[0];
+    let beta = eqForm[1];
     console.log("Alpha: ");
     console.log(matrixParse(alpha));
     console.log("Beta: ");
@@ -175,12 +166,12 @@ function main() {
     matrixParse(beta).forEach(function (v) {
         stream1.write(v + ', ');
     });
-    var result_iter = iter_solve(alpha, beta);
-    var result_seidel = seidel(array, alpha, beta);
-    var countI = result_iter[0];
-    var sol_iter = result_iter[1];
-    var countS = result_seidel[0];
-    var sol_seidel = result_seidel[1];
+    let result_iter = iter_solve(alpha, beta);
+    let result_seidel = seidel(array, alpha, beta);
+    let countI = result_iter[0];
+    let sol_iter = result_iter[1];
+    let countS = result_seidel[0];
+    let sol_seidel = result_seidel[1];
     console.log("nStepsIter: " + countI + '\n' + "X: ");
     console.log(matrixParse(sol_iter));
     console.log("nStepsSeidel: " + countS + '\n' + "X: ");

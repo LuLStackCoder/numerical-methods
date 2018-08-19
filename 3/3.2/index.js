@@ -95,7 +95,7 @@ function polyval(x0, x, k, coef) {
     let b = coef[1];
     let c = coef[2];
     let d = coef[3];
-    
+
     let tmp = (x0 - x[k]);
     return a[k] + b[k] * tmp + c[k] * math.pow(tmp, 2) + d[k] * math.pow(tmp, 3);
 }
@@ -117,7 +117,7 @@ function pol(x, x_n, coef) {
 
 function divideLine(vec) {
     let segment = [];
-    for (let i = 1; i <= vec.length; i++) {
+    for (let i = 1; i < vec.length; i++) {
         segment.push([vec[i - 1], vec[i]]);
     }
     return segment;
@@ -130,18 +130,11 @@ function main() {
     let y = array[1];
     let coef = spline(x, y);
 
-    let x1 = numeric.linspace(x[0], x[x.length - 1], 40);
-    let y1 = [];
-
-    for (let i = 0; i < x1.length; i++) {
-        y1.push(pol(x, x1[i], coef));
-    }
-
     let t = [];
     let y_value = pol(x, value, coef);
 
     for (let i = 0; i < x.length; i++) {
-        t.push(math.round(pol(x, x[i], coef), 4));
+        t.push(pol(x, x[i], coef));
     }
 
     console.log("y(x): " + t);
@@ -161,7 +154,7 @@ function main() {
     });
 
     io.on('connection', function (socket) {
-        io.emit('log', math.round(x1, 2), y1);
+        io.emit('log', math.round(x, 2), t, y);
     });
 
     http.listen(3000, function () {
